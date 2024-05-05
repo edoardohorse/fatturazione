@@ -34,7 +34,7 @@ def NuovoBuono(df: pd.DataFrame, index: int) -> Buono:
     # print(formatoColumn.formato.articolo)
     articolo = Articolo(
       tipo_record           = TipoRecord          (value=2),
-      progressivo           = Progressivo         (value=""), # TODO
+      progressivo           = Progressivo         (value=index+1), # TODO
       codice_articolo       = CodiceArticolo      (value=formatoColumn.formato.codice),
       descrizione_articolo  = DescrizioneArticolo (value=formatoColumn.formato.articolo),
       unita_di_misura       = UnitaDiMisura       (value="PZ"),
