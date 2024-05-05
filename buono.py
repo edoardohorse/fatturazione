@@ -28,6 +28,8 @@ def NuovoBuono(df: pd.DataFrame, index: int) -> Buono:
 
   for codiceFormato in formatiFromRow:
     formatoColumn: FormatoColumn = formatiFromRow[codiceFormato]
+
+    importoNetto = round(formatoColumn.quantita*float(formatoColumn.formato.prezzo), 2)
     
     # print(formatoColumn.formato.articolo)
     articolo = Articolo(
@@ -38,7 +40,7 @@ def NuovoBuono(df: pd.DataFrame, index: int) -> Buono:
       unita_di_misura       = UnitaDiMisura       (value="PZ"),
       quantita              = Quantita            (value=formatoColumn.quantita),
       prezzo_unitario       = PrezzoUnitario      (value=formatoColumn.formato.prezzo),
-      # importo_netto       = ImportoNetto        (value=), # TODO
+      importo_netto         = ImportoNetto        (value=importoNetto),
       tipo_IVA              = TipoIVA             (value=" "),
       aliquota_IVA          = AliquotaIVA         (value=formatoColumn.formato.iva),
       tipo_movimento        = TipoMovimento       (value=" "),
