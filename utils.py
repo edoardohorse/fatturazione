@@ -1,7 +1,9 @@
 import pandas as pd
 
+from const import FILENAME
+
 # get a row from df by its index and return only column that are populated
-def epurateRowByIndex(df: pd.DataFrame,index: int):
+def epurateNaNOfRowByIndex(df: pd.DataFrame,index: int):
   return df.iloc[index][~df.iloc[index].isna()]
 
 # return a df without rows that haven't an 'n. buono' and datetime type as 'data'
@@ -19,3 +21,11 @@ def initDataFrame(df: pd.DateOffset)->pd.DataFrame:
   new_df = dropRowsWithoutIDAndDate(df)
   new_df = dropRowsNotMegagest(new_df)
   return new_df
+
+
+SHEET_MESE = "GENNAIO 2024"
+
+def fetchDataFromVenduto():
+  df = pd.read_excel(io=FILENAME, sheet_name=SHEET_MESE)
+  df = initDataFrame(df)
+  return df
