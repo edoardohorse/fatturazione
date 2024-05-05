@@ -22,6 +22,17 @@ def initDataFrame(df: pd.DateOffset)->pd.DataFrame:
   new_df = dropRowsNotMegagest(new_df)
   return new_df
 
+def splitDecimalWithPadding(value: str, nPaddingInt: int, nPaddingDecimal : int) -> str:
+  split = str(value).split('.')
+  intero  = split[0].rjust(nPaddingInt, "0")
+  
+  decimal = ""
+  if len(split) == 2 :
+    decimal = split[1]
+    
+  decimal = decimal.rjust(nPaddingDecimal, "0")
+
+  return intero+decimal
 
 SHEET_MESE = "GENNAIO 2024"
 

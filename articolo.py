@@ -1,6 +1,8 @@
 from typing import Dict, Optional
 from dataclasses import asdict, dataclass
 
+from utils import splitDecimalWithPadding
+
 @dataclass
 class Field:
   value: any
@@ -8,6 +10,7 @@ class Field:
   
   def __value__(self):
     return str(self.value).rjust(self.length, "0")
+  
 
 
 @dataclass
@@ -46,17 +49,26 @@ class Quantita(Field):
   length : int = 7
   mandatory : bool = True
 
+  def __value__(self):
+    return splitDecimalWithPadding(value=self.value, nPaddingInt=5, nPaddingDecimal=2)
+
 @dataclass
 class PrezzoUnitario(Field):
   name : str = "prezzo_unitario"
   length : int = 9
   mandatory : bool = True
 
+  def __value__(self):
+    return splitDecimalWithPadding(value=self.value, nPaddingInt=5, nPaddingDecimal=4)
+  
 @dataclass
 class ImportoNetto(Field):
   name : str = "importo_netto"
   length : int = 9
   mandatory : bool = True
+
+  def __value__(self):
+    return splitDecimalWithPadding(value=self.value, nPaddingInt=7, nPaddingDecimal=2)
 
 @dataclass
 class NumeroPezzi(Field):
@@ -210,6 +222,7 @@ class Articolo:
     for key, value in asdict(self).items():
       if value is not None:
         stringCsv = stringCsv+getattr(self,key).__value__()
+        print(key, getattr(self,key).__value__())
 
     return stringCsv
   

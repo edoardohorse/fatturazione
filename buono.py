@@ -15,7 +15,7 @@ class Buono:
     stringCsv = ""
 
     for articolo in self.articoli:
-      stringCsv = stringCsv+articolo.__interpolate__() + "\n"
+      stringCsv = stringCsv+articolo.__interpolate__() + '\r\n'
 
     return stringCsv
 
