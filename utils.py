@@ -1,6 +1,15 @@
+from dataclasses import dataclass
 import pandas as pd
 
 from const import FILENAME
+
+@dataclass
+class Field:
+  value: any
+  length: int
+  
+  def __value__(self):
+    return str(self.value).strip().rjust(self.length, "0")
 
 # get a row from df by its index and return only column that are populated
 def epurateNaNOfRowByIndex(df: pd.DataFrame,index: int):

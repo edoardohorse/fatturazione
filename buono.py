@@ -6,10 +6,90 @@ from formato import FormatoColumn, extractFormatiConQuantitaFromRow
 from utils import epurateNaNOfRowByIndex
 import pandas as pd
 
+@dataclass
+class Tiporecord(Field):
+  length : int = 2
+  mandatory: bool = True
+
+@dataclass
+class Progressivo(Field):
+  length : int = 5
+  mandatory: bool = False
+
+@dataclass
+class RifFattura(Field):
+  length : int = 6
+  mandatory: bool = True
+
+@dataclass
+class Datafattura(Field):
+  length : int = 6
+  mandatory: bool = True
+
+@dataclass
+class RifBolla(Field):
+  length : int = 6
+  mandatory: bool = False
+
+@dataclass
+class Databolla(Field):
+  length : int = 6
+  mandatory: bool = False
+
+@dataclass
+class Codicefornitore(Field):
+  length : int = 15
+  mandatory: bool = True
+
+@dataclass
+class TipocodFornitore(Field):
+  length : int = 1
+  mandatory: bool = True
+
+@dataclass
+class CodiceClienteforn(Field):
+  length : int = 15
+  mandatory: bool = True
+
+@dataclass
+class CodiceCooperativa(Field):
+  length : int = 15
+  mandatory: bool = False
+
+@dataclass
+class Codicesocio(Field):
+  length : int = 15
+  mandatory: bool = True
+
+@dataclass
+class TipoCodicesocio(Field):
+  length : int = 1
+  mandatory: bool = True
+
+@dataclass
+class TipoDocumento(Field):
+  length : int = 1
+  mandatory: bool = True
+
+
+
 
 @dataclass
 class Buono:
   articoli : List[Articolo]
+  tipo_record :        Optional[Tiporecord] = None        #01
+  progressivo :        Optional[Progressivo] = None       #02
+  rifFattura :         Optional[RifFattura] = None        #03
+  data_fattura :       Optional[Datafattura] = None       #04
+  rif_bolla :          Optional[RifBolla] = None          #05
+  data_bolla :         Optional[Databolla] = None         #06
+  codice_fornitore :   Optional[Codicefornitore] = None   #07
+  tipocodFornitore :   Optional[TipocodFornitore] = None  #08
+  codice_clienteforn : Optional[CodiceClienteforn] = None #09
+  codice_cooperativa : Optional[CodiceCooperativa] = None #10
+  codice_socio :       Optional[Codicesocio] = None       #11
+  tipo_codicesocio :   Optional[TipoCodicesocio] = None   #12
+  tipo_documento :     Optional[TipoDocumento] = None     #13
 
   def __interpolate__(self):
     stringCsv = ""

@@ -1,16 +1,8 @@
 from typing import Dict, Optional
-from dataclasses import asdict, dataclass
+from dataclasses import Field, asdict, dataclass
 
 from utils import splitDecimalWithPadding
 
-@dataclass
-class Field:
-  value: any
-  length: int
-  
-  def __value__(self):
-    return str(self.value).strip().rjust(self.length, "0")
-  
 
 
 @dataclass
