@@ -9,7 +9,7 @@ class Field:
   length: int
   
   def __value__(self):
-    return str(self.value).rjust(self.length, "0")
+    return str(self.value).strip().rjust(self.length, "0")
   
 
 
@@ -166,6 +166,9 @@ class DataOrdine(Field):
   length : int = 6
   mandatory : bool = True
 
+  def __value__(self):
+    return self.value.strftime("%Y%m%d")
+
 @dataclass
 class Riservato(Field):
   name : str = "riservato"
@@ -222,7 +225,7 @@ class Articolo:
     for key, value in asdict(self).items():
       if value is not None:
         stringCsv = stringCsv+getattr(self,key).__value__()
-        print(key, getattr(self,key).__value__())
+        # print(key, getattr(self,key).__value__())
 
     return stringCsv
   
