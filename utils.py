@@ -2,7 +2,25 @@ from dataclasses import dataclass
 import pandas as pd
 import datetime
 
+from openpyxl import load_workbook
+import re
 from const import FILENAME
+
+MESI = [
+    "Gennaio",
+    "Febbraio",
+    "Marzo",
+    "Aprile",
+    "Maggio",
+    "Giugno",
+    "Luglio",
+    "Agosto",
+    "Settembre",
+    "Ottobre",
+    "Novembre",
+    "Dicembre"
+]
+
 
 @dataclass
 class Field:
@@ -44,12 +62,33 @@ def splitDecimalWithPadding(value: str, nPaddingInt: int, nPaddingDecimal : int)
 
   return intero+decimal
 
-SHEET_MESE = "GENNAIO 2024"
-
 def formatDateToYYYYMMAA(date: datetime) -> str:
   return date.strftime('%Y%m%d')
 
-def fetchDataFromVenduto():
-  df = pd.read_excel(io=FILENAME, sheet_name=SHEET_MESE)
+def fetchDataFromVenduto(filename, sheet):
+  df = pd.read_excel(io=filename, sheet_name=sheet)
   df = initDataFrame(df)
   return df
+
+def fetchMesiDalVenduto(filename):
+    # Load the Excel file
+    workbook = load_workbook(filename=filename, read_only=True)
+    
+    # Get the sheet names
+    sheet_names = workbook.sheetnames
+    
+    # Close the workbook
+    workbook.close()
+    
+    
+    mesi_disponibili = []
+    for mese in MESI:
+      for sheet in sheet_names:
+        # print(mese, sheet)
+        if re.search(mese, sheet, re.IGNORECASE):
+          mesi_disponibili.append(sheet)
+    
+    return mesi_disponibili
+  
+if __name__ == "__main__":
+  print(fetchMesiDalVenduto("C:/Users/e.cavallo/Documents/fatturazione/venduto 2024.xlsx"))
