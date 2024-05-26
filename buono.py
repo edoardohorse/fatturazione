@@ -5,9 +5,10 @@ from articolo import *
 from formato import FormatoColumn, extractFormatiConQuantitaFromRow
 from utils import epurateNaNOfRowByIndex, Field
 import pandas as pd
+from const import CODICE_FORNITORE
 
 @dataclass
-class Tiporecord(Field):
+class TipoRecord(Field):
   length : int = 2
   mandatory: bool = True
 
@@ -17,7 +18,7 @@ class Progressivo(Field):
   mandatory: bool = False
 
 @dataclass
-class RifFattura(Field):
+class NumeroFattura(Field):
   length : int = 6
   mandatory: bool = True
 
@@ -49,7 +50,7 @@ class TipocodFornitore(Field):
 @dataclass
 class CodiceClienteforn(Field):
   length : int = 15
-  mandatory: bool = True
+  mandatory: bool = False
 
 @dataclass
 class CodiceCooperativa(Field):
@@ -75,10 +76,12 @@ class TipoDocumento(Field):
 
 @dataclass
 class Buono:
+  rowDf: pd.Series
   articoli : List[Articolo]
-  tipo_record :        Optional[Tiporecord] = None        #01
+  index: int
+  tipo_record :        Optional[TipoRecord] = None        #01
   progressivo :        Optional[Progressivo] = None       #02
-  rifFattura :         Optional[RifFattura] = None        #03
+  rifFattura :         Optional[NumeroFattura] = None     #03
   data_fattura :       Optional[Datafattura] = None       #04
   rif_bolla :          Optional[RifBolla] = None          #05
   data_bolla :         Optional[Databolla] = None         #06
@@ -90,17 +93,34 @@ class Buono:
   tipo_codicesocio :   Optional[TipoCodicesocio] = None   #12
   tipo_documento :     Optional[TipoDocumento] = None     #13
   
-  def __init__(self):
+  def __init__(self, df: pd.DataFrame, index: int):
     self.articoli = []
+    self.index = index
+    
+    numFattura = None
+    dataFattura = None
+    dataBolla = None
+
+    self.tipo_record = TipoRecord(value=2)
+    self.progressivo = Progressivo(value=self.index)
+    # self.rifFattura = NumeroFattura(value=rifFattura) # TODO da inserire ogni volta a mano
+    # self.data_fattura = Datafattura(value=dataFattura) #TODO da inserire ogni volta a mano
+    self.rif_bolla =  RifBolla(value=self.index)
+    # self.data_bolla = Databolla(value=dataBolla) # TODO da prendere da venduto
+    self.codice_fornitore = Codicefornitore(value=CODICE_FORNITORE)
+    # self.codice_socio = Codicesocio(value=)
+    self.tipo_codicesocio = TipoCodicesocio(value="1")
+    self.tipo_documento = TipoDocumento(value="F")
     
   
-  def getArticoli(self, df: pd.DataFrame, index: int) -> List[Articolo]:
-    rowCleaned = epurateNaNOfRowByIndex(df, index)
+  def getArticoli(self, df: pd.DataFrame) -> List[Articolo]:
+    rowCleaned = epurateNaNOfRowByIndex(df, self.index)
 
     formatiFromRow = extractFormatiConQuantitaFromRow(rowCleaned)
 
     articoli = []
-      
+    indexArticolo = 1
+    
     for codiceFormato in formatiFromRow:
       formatoColumn: FormatoColumn = formatiFromRow[codiceFormato]
 
@@ -108,8 +128,8 @@ class Buono:
       
       # print(formatoColumn.formato.articolo)
       articolo = Articolo(
-        tipo_record           = Tiporecord          (value=2),
-        progressivo           = Progressivo         (value=index+1), # TODO
+        tipo_record           = TipoRecord          (value=2),
+        progressivo           = Progressivo         (value=indexArticolo), # TODO
         codice_articolo       = CodiceArticolo      (value=formatoColumn.formato.codice),
         descrizione_articolo  = DescrizioneArticolo (value=formatoColumn.formato.articolo),
         unita_di_misura       = UnitaDiMisura       (value="PZ"),
@@ -126,6 +146,7 @@ class Buono:
       )
 
       articoli.append(articolo)
+      indexArticolo = indexArticolo + 1
       
       self.articoli = articoli
        
@@ -144,13 +165,11 @@ class Buono:
 
 def NuovoBuono(df: pd.DataFrame, index: int)-> Buono:
   
-  buono : Buono = Buono()
-  buono.getArticoli(df, index)
+  buono : Buono = Buono(df, index)
+  buono.getArticoli(df)
   
   # print(buono.__interpolate__())
   return buono  
-
-  return
 
 """ 
 if __name__ == "__main__":
