@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 import pandas as pd
 from enum import Enum
-from const import FILENAME
+from const import FILENAME, SHEET_FORMATI
 from utils import epurateNaNOfRowByIndex, fetchDataFromVenduto
 
 SHEET_FORMATI = 'Formati'
+import re
 
 
 
