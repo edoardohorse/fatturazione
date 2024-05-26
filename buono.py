@@ -3,7 +3,7 @@ from typing import List
 
 from articolo import *
 from formato import FormatoColumn, extractFormatiConQuantitaFromRow
-from utils import epurateNaNOfRowByIndex, Field
+from utils import epurateNaNOfRowByIndex, Field, formatDateToYYYYMMAA
 import pandas as pd
 from const import CODICE_FORNITORE
 from puntovendita import PuntoVendita
@@ -113,16 +113,15 @@ class Buono:
     
     numFattura = None
     dataFattura = None
-    dataBolla = None
+    dataBolla = formatDateToYYYYMMAA(df.iloc[index]["data"])
     codiceSocio = puntiVendita[df.iloc[index]["nome"]]
-    # print(codiceSocio)
 
     self.tipo_record = TipoRecord(value=2)
     self.progressivo = Progressivo(value=self.index)
     # self.rifFattura = NumeroFattura(value=rifFattura) # TODO da inserire ogni volta a mano
     # self.data_fattura = Datafattura(value=dataFattura) #TODO da inserire ogni volta a mano
     self.rif_bolla =  RifBolla(value=self.index)
-    # self.data_bolla = Databolla(value=dataBolla) # TODO da prendere da venduto
+    self.data_bolla = Databolla(value=dataBolla)
     self.codice_fornitore = Codicefornitore(value=CODICE_FORNITORE)
     self.codice_socio = Codicesocio(value=codiceSocio.codice)
     self.tipo_codicesocio = TipoCodicesocio(value="1")

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import pandas as pd
+import datetime
 
 from const import FILENAME
 
@@ -44,6 +45,9 @@ def splitDecimalWithPadding(value: str, nPaddingInt: int, nPaddingDecimal : int)
   return intero+decimal
 
 SHEET_MESE = "GENNAIO 2024"
+
+def formatDateToYYYYMMAA(date: datetime) -> str:
+  return date.strftime('%Y%m%d')
 
 def fetchDataFromVenduto():
   df = pd.read_excel(io=FILENAME, sheet_name=SHEET_MESE)
