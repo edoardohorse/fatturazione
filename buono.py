@@ -6,6 +6,7 @@ from formato import FormatoColumn, extractFormatiConQuantitaFromRow
 from utils import epurateNaNOfRowByIndex, Field
 import pandas as pd
 from const import CODICE_FORNITORE
+from puntovendita import PuntoVendita
 
 @dataclass
 class TipoRecord(Field):
@@ -72,13 +73,26 @@ class TipoDocumento(Field):
   length : int = 1
   mandatory: bool = True
 
-
+KEYS_TO_INTERPOLATE = [
+'tipo_record',
+'progressivo',
+'rifFattura',
+'data_fattura',
+'rif_bolla',
+'data_bolla',
+'codice_fornitore',
+'tipocodFornitore',
+'codice_clienteforn',
+'codice_cooperativa',
+'codice_socio',
+'tipo_codicesocio',
+'tipo_documento',
+]
 
 @dataclass
 class Buono:
-  rowDf: pd.Series
-  articoli : List[Articolo]
-  index: int
+  articoli : List[Articolo] = None
+  index: int  = None
   tipo_record :        Optional[TipoRecord] = None        #01
   progressivo :        Optional[Progressivo] = None       #02
   rifFattura :         Optional[NumeroFattura] = None     #03
@@ -93,13 +107,15 @@ class Buono:
   tipo_codicesocio :   Optional[TipoCodicesocio] = None   #12
   tipo_documento :     Optional[TipoDocumento] = None     #13
   
-  def __init__(self, df: pd.DataFrame, index: int):
+  def __init__(self, df: pd.DataFrame, index: int, puntiVendita: dict[str, PuntoVendita]):
     self.articoli = []
     self.index = index
     
     numFattura = None
     dataFattura = None
     dataBolla = None
+    codiceSocio = puntiVendita[df.iloc[index]["nome"]]
+    # print(codiceSocio)
 
     self.tipo_record = TipoRecord(value=2)
     self.progressivo = Progressivo(value=self.index)
@@ -108,7 +124,7 @@ class Buono:
     self.rif_bolla =  RifBolla(value=self.index)
     # self.data_bolla = Databolla(value=dataBolla) # TODO da prendere da venduto
     self.codice_fornitore = Codicefornitore(value=CODICE_FORNITORE)
-    # self.codice_socio = Codicesocio(value=)
+    self.codice_socio = Codicesocio(value=codiceSocio.codice)
     self.tipo_codicesocio = TipoCodicesocio(value="1")
     self.tipo_documento = TipoDocumento(value="F")
     
@@ -151,8 +167,18 @@ class Buono:
       self.articoli = articoli
        
 
-  def __interpolate__(self):
+  def __self_interpolate__(self):
     stringCsv = ""
+    for key, value in asdict(self).items():
+      if key not in KEYS_TO_INTERPOLATE: continue
+      if value is not None:
+        stringCsv = stringCsv+getattr(self,key).__value__()
+        # print(key, getattr(self,key).__value__())
+        
+    return stringCsv
+
+  def __interpolate__(self):
+    stringCsv = self.__self_interpolate__() + '\r\n'
 
     for articolo in self.articoli:
       stringCsv = stringCsv+articolo.__interpolate__() + '\r\n'
@@ -163,9 +189,9 @@ class Buono:
 
 
 
-def NuovoBuono(df: pd.DataFrame, index: int)-> Buono:
+def NuovoBuono(df: pd.DataFrame, index: int, puntiVendita: dict[str, PuntoVendita])-> Buono:
   
-  buono : Buono = Buono(df, index)
+  buono : Buono = Buono(df=df, index =index, puntiVendita=puntiVendita)
   buono.getArticoli(df)
   
   # print(buono.__interpolate__())
