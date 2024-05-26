@@ -1,7 +1,7 @@
 from typing import Dict, Optional
-from dataclasses import Field, asdict, dataclass
+from dataclasses import asdict, dataclass
 
-from utils import splitDecimalWithPadding
+from utils import splitDecimalWithPadding, Field
 
 
 

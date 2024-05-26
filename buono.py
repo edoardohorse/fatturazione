@@ -3,7 +3,7 @@ from typing import List
 
 from articolo import *
 from formato import FormatoColumn, extractFormatiConQuantitaFromRow
-from utils import epurateNaNOfRowByIndex
+from utils import epurateNaNOfRowByIndex, Field
 import pandas as pd
 
 @dataclass
@@ -73,7 +73,6 @@ class TipoDocumento(Field):
 
 
 
-
 @dataclass
 class Buono:
   articoli : List[Articolo]
@@ -90,6 +89,46 @@ class Buono:
   codice_socio :       Optional[Codicesocio] = None       #11
   tipo_codicesocio :   Optional[TipoCodicesocio] = None   #12
   tipo_documento :     Optional[TipoDocumento] = None     #13
+  
+  def __init__(self):
+    self.articoli = []
+    
+  
+  def getArticoli(self, df: pd.DataFrame, index: int) -> List[Articolo]:
+    rowCleaned = epurateNaNOfRowByIndex(df, index)
+
+    formatiFromRow = extractFormatiConQuantitaFromRow(rowCleaned)
+
+    articoli = []
+      
+    for codiceFormato in formatiFromRow:
+      formatoColumn: FormatoColumn = formatiFromRow[codiceFormato]
+
+      importoNetto = round(formatoColumn.quantita*float(formatoColumn.formato.prezzo), 2)
+      
+      # print(formatoColumn.formato.articolo)
+      articolo = Articolo(
+        tipo_record           = Tiporecord          (value=2),
+        progressivo           = Progressivo         (value=index+1), # TODO
+        codice_articolo       = CodiceArticolo      (value=formatoColumn.formato.codice),
+        descrizione_articolo  = DescrizioneArticolo (value=formatoColumn.formato.articolo),
+        unita_di_misura       = UnitaDiMisura       (value="PZ"),
+        quantita              = Quantita            (value=formatoColumn.quantita),
+        prezzo_unitario       = PrezzoUnitario      (value=formatoColumn.formato.prezzo),
+        importo_netto         = ImportoNetto        (value=importoNetto),
+        tipo_IVA              = TipoIVA             (value=" "),
+        aliquota_IVA          = AliquotaIVA         (value=formatoColumn.formato.iva),
+        tipo_movimento        = TipoMovimento       (value=" "),
+        tipo_cessione         = TipoCessione        (value="1"),
+        tipo_reso             = TipoReso            (value=""),
+        data_ordine           = DataOrdine          (value=rowCleaned["data"]),
+        ean                   = EAN                 (value=formatoColumn.formato.ean)
+      )
+
+      articoli.append(articolo)
+      
+      self.articoli = articoli
+       
 
   def __interpolate__(self):
     stringCsv = ""
@@ -99,43 +138,19 @@ class Buono:
 
     return stringCsv
 
-def NuovoBuono(df: pd.DataFrame, index: int) -> Buono:
-  rowCleaned = epurateNaNOfRowByIndex(df, index)
 
-  articoli = []
+
+
+
+def NuovoBuono(df: pd.DataFrame, index: int)-> Buono:
   
-  formatiFromRow = extractFormatiConQuantitaFromRow(rowCleaned)
-
-  for codiceFormato in formatiFromRow:
-    formatoColumn: FormatoColumn = formatiFromRow[codiceFormato]
-
-    importoNetto = round(formatoColumn.quantita*float(formatoColumn.formato.prezzo), 2)
-    
-    # print(formatoColumn.formato.articolo)
-    articolo = Articolo(
-      tipo_record           = TipoRecord          (value=2),
-      progressivo           = Progressivo         (value=index+1), # TODO
-      codice_articolo       = CodiceArticolo      (value=formatoColumn.formato.codice),
-      descrizione_articolo  = DescrizioneArticolo (value=formatoColumn.formato.articolo),
-      unita_di_misura       = UnitaDiMisura       (value="PZ"),
-      quantita              = Quantita            (value=formatoColumn.quantita),
-      prezzo_unitario       = PrezzoUnitario      (value=formatoColumn.formato.prezzo),
-      importo_netto         = ImportoNetto        (value=importoNetto),
-      tipo_IVA              = TipoIVA             (value=" "),
-      aliquota_IVA          = AliquotaIVA         (value=formatoColumn.formato.iva),
-      tipo_movimento        = TipoMovimento       (value=" "),
-      tipo_cessione         = TipoCessione        (value="1"),
-      tipo_reso             = TipoReso            (value=""),
-      data_ordine           = DataOrdine          (value=rowCleaned["data"]),
-      ean                   = EAN                 (value=formatoColumn.formato.ean)
-    )
-
-    articoli.append(articolo)
-
-  buono : Buono = Buono(articoli=articoli)
-  # print(buono)
+  buono : Buono = Buono()
+  buono.getArticoli(df, index)
+  
   # print(buono.__interpolate__())
-  return buono
+  return buono  
+
+  return
 
 """ 
 if __name__ == "__main__":
