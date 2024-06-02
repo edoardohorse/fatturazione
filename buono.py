@@ -177,10 +177,10 @@ class Buono:
     return stringCsv
 
   def __interpolate__(self):
-    stringCsv = self.__self_interpolate__() + '\r\n'
+    stringCsv = self.__self_interpolate__() + '\r'
 
     for articolo in self.articoli:
-      stringCsv = stringCsv+articolo.__interpolate__() + '\r\n'
+      stringCsv = stringCsv + articolo.__interpolate__() + '\r'
 
     return stringCsv
 
