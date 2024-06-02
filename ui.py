@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkcalendar import DateEntry
 from tkinter import filedialog
-from tkinter.scrolledtext import ScrolledText
+from tkinter import ttk 
 from utils import fetchMesiDalVenduto
 import datetime
 from dataclasses import dataclass
@@ -13,7 +13,9 @@ ui = {
 'filepicker' : None,
 'monthSelector' : None,
 'datepicker' : None,
-'btn': None
+'btn': None,
+'progress': None,
+'root':None
 }
 
 @dataclass
@@ -167,6 +169,7 @@ class MonthSelectorApp:
     
 class ButtonLaunch:
   def __init__(self, root, onReady, onLaunch) -> None:
+    global ui
     self.root = root
     self.onReady = onReady
     self.onLaunch = onLaunch
@@ -174,7 +177,7 @@ class ButtonLaunch:
     def onClick():
       res = checkInputs(self.onReady)
       if res is not False:
-        self.onLaunch(res)
+        self.onLaunch(ui)
       
     
     self.select_button = tk.Button(self.root, text="Lancia", command=onClick)
@@ -187,8 +190,8 @@ class VendutoInfo:
     self.status_bar = tk.Label(root, text="", bd=1, relief=tk.SUNKEN, anchor=tk.W)
     self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-  def printInfo(self, nRows: int):
-        self.status_bar.config(text=f"Trovati {nRows} buoni di megagest")
+  def printInfo(self, log: str):
+    self.status_bar.config(text=log)
         
 def checkInputs(onReady):
   global ui
@@ -215,23 +218,48 @@ def checkInputs(onReady):
   # print(res)
   
   [data, puntivendita] = onReady(res)
-  
-  ui['info'].printInfo(data.shape[0])
+
+  nRows = data.shape[0] 
+  ui['info'].printInfo(f"Trovati {nRows} buoni di megagest")
+
   return res 
+ 
+ 
+class Progress:
+  def __init__(self, root):
+    self.root = root
+    frame = ttk.Frame(root)
+    frame.pack(padx=10, pady=10)
+    self.progressbar = ttk.Progressbar(frame, orient='horizontal', mode='determinate')
     
+  def start(self, length: int):
+    self.progressbar.pack_forget()
+    self.progressbar.config(length=length)
+    self.progressbar.pack(pady=5,side=tk.BOTTOM)
+    self.progressbar.start()
+    
+  def stop(self):
+    self.progressbar.stop()
+
+  def update(self, value: int):
+    self.progressbar['value'] = value 
+    self.root.update_idletasks()
+     
 
 def launchUI(onReady, onLaunch):
-  root = tk.Tk()
   global ui
+  root = tk.Tk()
   
+  ui['root'] = root
   ui['inputFattura'] = TextInput(root)
   ui['datepicker'] = DatePickerApp(root)
   ui['filepicker'] = FilePicker(root)
   ui['monthSelector'] = MonthSelectorApp(root, onReady)
   ui['info'] = VendutoInfo(root)
   ui['btn'] = ButtonLaunch(root, onReady, onLaunch)
+  ui['progress'] = Progress(root)
+  
   root.mainloop()
-  return ui
 
 
 if __name__ == "__main__":
