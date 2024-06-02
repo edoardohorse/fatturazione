@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-
+from datetime import datetime
 from articolo import *
 from formato import FormatoColumn, extractFormatiConQuantitaFromRow
 from utils import epurateNaNOfRowByIndex, Field, formatDateToYYYYMMAA
@@ -27,6 +27,9 @@ class NumeroFattura(Field):
 class Datafattura(Field):
   length : int = 6
   mandatory: bool = True
+  
+  def __value__(self):
+    return self.value.strftime("%Y%m%d")
 
 @dataclass
 class RifBolla(Field):
@@ -37,6 +40,9 @@ class RifBolla(Field):
 class Databolla(Field):
   length : int = 6
   mandatory: bool = False
+  
+  def __value__(self):
+    return self.value.strftime("%Y%m%d")
 
 @dataclass
 class Codicefornitore(Field):
@@ -107,19 +113,17 @@ class Buono:
   tipo_codicesocio :   Optional[TipoCodicesocio] = None   #12
   tipo_documento :     Optional[TipoDocumento] = None     #13
   
-  def __init__(self, df: pd.DataFrame, index: int, puntiVendita: dict[str, PuntoVendita]):
+  def __init__(self, df: pd.DataFrame, index: int, numFattura: str, dataFattura: datetime, puntiVendita: dict[str, PuntoVendita]):
     self.articoli = []
     self.index = index
     
-    numFattura = None
-    dataFattura = None
-    dataBolla = formatDateToYYYYMMAA(df.iloc[index]["data"])
+    dataBolla = df.iloc[index]["data"]
     codiceSocio = puntiVendita[df.iloc[index]["nome"]]
 
     self.tipo_record = TipoRecord(value=2)
     self.progressivo = Progressivo(value=self.index)
-    # self.rifFattura = NumeroFattura(value=rifFattura) # TODO da inserire ogni volta a mano
-    # self.data_fattura = Datafattura(value=dataFattura) #TODO da inserire ogni volta a mano
+    self.rifFattura = NumeroFattura(value=numFattura)
+    self.data_fattura = Datafattura(value=dataFattura)
     self.rif_bolla =  RifBolla(value=self.index)
     self.data_bolla = Databolla(value=dataBolla)
     self.codice_fornitore = Codicefornitore(value=CODICE_FORNITORE)
@@ -188,9 +192,9 @@ class Buono:
 
 
 
-def NuovoBuono(df: pd.DataFrame, index: int, puntiVendita: dict[str, PuntoVendita])-> Buono:
+def NuovoBuono(df: pd.DataFrame, index: int, numFattura: str, dataFattura: datetime, puntiVendita: dict[str, PuntoVendita])-> Buono:
   
-  buono : Buono = Buono(df=df, index =index, puntiVendita=puntiVendita)
+  buono : Buono = Buono(df=df, index =index, numFattura=numFattura, dataFattura=dataFattura, puntiVendita=puntiVendita)
   buono.getArticoli(df)
   
   # print(buono.__interpolate__())

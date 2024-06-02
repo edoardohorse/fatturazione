@@ -24,6 +24,7 @@ class Result:
   dataFattura: str = None
   filename: str = None
   mese: str = None
+  output: str = None
 
 class TextInput:
     def __init__(self, root):
@@ -177,7 +178,7 @@ class ButtonLaunch:
     def onClick():
       res = checkInputs(self.onReady)
       if res is not False:
-        self.onLaunch(ui)
+        self.onLaunch(res, ui)
       
     
     self.select_button = tk.Button(self.root, text="Lancia", command=onClick)
@@ -223,8 +224,7 @@ def checkInputs(onReady):
   ui['info'].printInfo(f"Trovati {nRows} buoni di megagest")
 
   return res 
- 
- 
+  
 class Progress:
   def __init__(self, root):
     self.root = root
