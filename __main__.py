@@ -16,15 +16,15 @@ puntivendita = None
 def onReady(res: Result):
   global data, puntivendita
   
-  print(res)
   data = fetchDataFromVenduto(filename=res['filename'], sheet=res['mese'])
-  
   puntivendita = fetchPuntiVenditaMegagest(filename=res['filename'])
+  
   return [data, puntivendita]
   
 def launchConversion(res:Result, ui = None):
   global data, puntivendita
   filenameToExport = None
+  
   if ui:
     filenameToExport = createFileToExport()
   else:
@@ -45,8 +45,8 @@ def launchConversion(res:Result, ui = None):
     # print(buono.__interpolate__())
     contentFile = contentFile + buono.__interpolate__()
     
-    log = f"Buono {index+1} fatto"
-    print(log)
+    log = f"Buono {index+1}/{nRows} fatto"
+    print(log, end='\r')
     if ui:
       ui['info'].printInfo(log)
       ui['progress'].update(index)
@@ -93,9 +93,7 @@ def cli():
     'mese':args.get("-mese"),
   } 
   
-  
-  print(res)
-  
+  print(res) 
   global data, puntivendita
   [data, puntivendita] = onReady(res)  
   launchConversion(res) 
