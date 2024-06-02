@@ -29,7 +29,7 @@ class Datafattura(Field):
   mandatory: bool = True
   
   def __value__(self):
-    return self.value.strftime("%Y%m%d")
+    return formatDateToYYYYMMAA(self.value)
 
 @dataclass
 class RifBolla(Field):
@@ -42,7 +42,7 @@ class Databolla(Field):
   mandatory: bool = False
   
   def __value__(self):
-    return self.value.strftime("%Y%m%d")
+    return formatDateToYYYYMMAA(self.value)
 
 @dataclass
 class Codicefornitore(Field):

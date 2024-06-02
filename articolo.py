@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from dataclasses import asdict, dataclass
 
-from utils import splitDecimalWithPadding, Field
+from utils import splitDecimalWithPadding, Field,formatDateToYYYYMMAA
 
 
 
@@ -159,7 +159,7 @@ class DataOrdine(Field):
   mandatory : bool = True
 
   def __value__(self):
-    return self.value.strftime("%Y%m%d")
+    return formatDateToYYYYMMAA(self.value)
 
 @dataclass
 class Riservato(Field):
