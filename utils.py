@@ -65,12 +65,12 @@ def splitDecimalWithPadding(value: str, nPaddingInt: int, nPaddingDecimal : int)
 def formatDateToYYYYMMAA(date: datetime) -> str:
   return date.strftime('%Y%m%d')
 
-def fetchDataFromVenduto(filename, sheet):
+def fetchDataFromVenduto(filename: str, sheet: str):
   df = pd.read_excel(io=filename, sheet_name=sheet)
   df = initDataFrame(df)
   return df
 
-def fetchMesiDalVenduto(filename):
+def fetchMesiDalVenduto(filename: str):
     # Load the Excel file
     workbook = load_workbook(filename=filename, read_only=True)
     

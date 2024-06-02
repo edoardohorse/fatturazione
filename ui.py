@@ -1,13 +1,28 @@
 import tkinter as tk
 from tkcalendar import DateEntry
 from tkinter import filedialog
+from tkinter.scrolledtext import ScrolledText
 from utils import fetchMesiDalVenduto
 import datetime
+from dataclasses import dataclass
+import pandas as pd
 
-inputFattura = None
-filepicker = None
-monthSelector = None
-datepicker = None
+
+ui = { 
+'inputFattura' : None,
+'filepicker' : None,
+'monthSelector' : None,
+'datepicker' : None,
+'btn': None
+}
+
+@dataclass
+class Result:
+  numeroFattura: str = None
+  dataFattura: str = None
+  filename: str = None
+  mese: str = None
+
 class TextInput:
     def __init__(self, root):
         self.root = root
@@ -17,14 +32,13 @@ class TextInput:
         self.label.pack(pady=10)
 
         self.entry = tk.Entry(root, width=30)
-        self.entry.pack(pady=5)
+        self.entry.pack(pady=5,padx=5)
 
     def getNumeroFattura(self):
         input_text = self.entry.get()
         # print("Entered text:", input_text)
         
-        return input_text
-      
+        return input_text    
     
     def alert(self):
       return tk.messagebox.showinfo("Alert", "Inserire il numero di fattura!")
@@ -40,20 +54,23 @@ class FilePicker:
     self.root = root
 
     self.button = tk.Button(self.root, text="Scegli il file del venduto", command=self.open_file_dialog)
-    self.button.pack(pady=20)
+    self.button.pack(pady=2)
+    
+    self.label = tk.Label(self.root)
+    self.label.pack(pady=2)
     
   def open_file_dialog(self)->str:
+    global ui
     file_path = filedialog.askopenfilename()
 
     if file_path:
       self.filename = file_path
       mesiDisponibili = fetchMesiDalVenduto(filename=file_path)
       if len(mesiDisponibili) > 0:
-        self.label = tk.Label(root, text="File scelto: "+file_path.split("/")[-1])
-        self.label.pack(pady=10)
+        self.label.config(text="File scelto: "+file_path.split("/")[-1])
         
         print("Seleziona il file del venduto", file_path)
-        monthSelector.render(mesiDisponibili)
+        ui['monthSelector'].render(mesiDisponibili)
         
       else: self.alert()
       
@@ -69,7 +86,6 @@ class FilePicker:
     self.alert()
     return False
 
-
 class DatePickerApp:
   date: datetime = None
   
@@ -79,17 +95,17 @@ class DatePickerApp:
       
       # Label for instructions
       self.label = tk.Label(root, text="Data fattura:")
-      self.label.pack(pady=10)
+      self.label.pack(pady=5)
       
       # DateEntry widget
       self.date_entry = DateEntry(root, width=12, background='darkblue',
                                   foreground='white', borderwidth=2, year=2024)
-      self.date_entry.pack(pady=10)
+      self.date_entry.pack(pady=2)
       
       
       # Label to display the selected date
       self.date_label = tk.Label(root, text="")
-      self.date_label.pack(pady=10)
+      self.date_label.pack(pady=2)
       
       self.date_entry.bind("<<DateEntrySelected>>", self.on_date_change)
       
@@ -107,35 +123,40 @@ class DatePickerApp:
     if self.date is not None: return True
     self.alert()
     return False
-
-
-    
+ 
 class MonthSelectorApp:
   mese: str = None
-  def __init__(self, root):
-      self.root = root
+  def __init__(self, root, onReady):
+    self.root = root
+    self.onReady = onReady
+    self.selected_month = tk.StringVar()
+    self.month_label = tk.Label(self.root, text="Scegli mese:")
+    self.month_label.pack()
+    self.month_menu = tk.OptionMenu(self.root, "",[])
+    self.month_menu.pack(pady=5)
       
   def render(self, mesiDisponibili):
     if len(mesiDisponibili) == 0:
       return filepicker.alert()
-
+    
     self.selected_month = tk.StringVar()
-    self.selected_month.set(mesiDisponibili[0])  # Set the default selected month
-
-    self.month_label = tk.Label(self.root, text="Scegli mese:")
-    self.month_label.pack(pady=10)
-
+    
+    self.month_menu.pack_forget() 
     self.month_menu = tk.OptionMenu(self.root, self.selected_month, *mesiDisponibili, command=self.getMese)
-    self.month_menu.pack(pady=5)
-
+    self.month_menu.pack(pady=5) 
+         
+    # self.selected_month.set(mesiDisponibili[0])  # Set the default selected month
+    # months = mesiDisponibili
+    # self.month_menu.config(variable=self.selected_month, *mesiDisponibili, command=self.getMese)
+    
   def getMese(self,value):
       selected_month = value
       self.mese = selected_month
       print("Selezionato mese:", selected_month)
+      checkInputs(self.onReady)
       
       return selected_month
-    
-   
+      
   def alert(self):
     return tk.messagebox.showinfo("Alert", "Seleziona il mese da fatturare")
        
@@ -143,46 +164,75 @@ class MonthSelectorApp:
     if self.mese is not None: return True
     self.alert()
     return False
-
-    
     
 class ButtonLaunch:
-  def __init__(self, root) -> None:
+  def __init__(self, root, onReady, onLaunch) -> None:
     self.root = root
+    self.onReady = onReady
+    self.onLaunch = onLaunch
     
-    self.select_button = tk.Button(self.root, text="Lancia", command=self.check)
+    def onClick():
+      res = checkInputs(self.onReady)
+      if res is not False:
+        self.onLaunch(res)
+      
+    
+    self.select_button = tk.Button(self.root, text="Lancia", command=onClick)
     self.select_button.pack(side=tk.BOTTOM,pady=10)
   
-  def check(self):
-    # if not inputFattura.check():
-    #   return
-    
-    # if not datepicker.check():
-    #   return
-    
-    # if not filepicker.check():
-    #   return
-    
-    if not monthSelector.check():
-      return
-    
-    res = {
-      "numeroFattura" : inputFattura.getNumeroFattura(),
-      "dataFattura" : datepicker.date,
-      "filename" : filepicker.filename,
-      "mese" : monthSelector.mese
-    }
-    
-    print(res)
-    
-    return res 
-      
+class VendutoInfo:
+ 
+  def __init__(self, root) -> None:
+    self.root = root
+    self.status_bar = tk.Label(root, text="", bd=1, relief=tk.SUNKEN, anchor=tk.W)
+    self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
+  def printInfo(self, nRows: int):
+        self.status_bar.config(text=f"Trovati {nRows} buoni di megagest")
+        
+def checkInputs(onReady):
+  global ui
+  
+  if not ui['inputFattura'].check():
+    return False
+  
+  if not ui['datepicker'].check():
+    return False
+  
+  if not ui['filepicker'].check():
+    return False
+  
+  if not ui['monthSelector'].check():
+    return False
+  
+  res = {
+    "numeroFattura" : ui['inputFattura'].getNumeroFattura(),
+    "dataFattura" : ui['datepicker'].date,
+    "filename" : ui['filepicker'].filename,
+    "mese" : ui['monthSelector'].mese
+  }
+  
+  # print(res)
+  
+  [data, puntivendita] = onReady(res)
+  
+  ui['info'].printInfo(data.shape[0])
+  return res 
+    
 
-def launchUI():
+def launchUI(onReady, onLaunch):
   root = tk.Tk()
-  app = DatePickerApp(root)
+  global ui
+  
+  ui['inputFattura'] = TextInput(root)
+  ui['datepicker'] = DatePickerApp(root)
+  ui['filepicker'] = FilePicker(root)
+  ui['monthSelector'] = MonthSelectorApp(root, onReady)
+  ui['info'] = VendutoInfo(root)
+  ui['btn'] = ButtonLaunch(root, onReady, onLaunch)
   root.mainloop()
+  return ui
+
 
 if __name__ == "__main__":
     root = tk.Tk()
