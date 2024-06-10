@@ -1,7 +1,26 @@
 from typing import Dict, Optional
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 
 from utils import splitDecimalWithPadding, Field,formatDateToYYYYMMAA
+
+KEYS_TO_INTERPOLATE = [
+"tipo_record",
+"progressivo",
+"codice_articolo",
+"descrizione_articolo",
+"unita_di_misura",
+"quantita",
+"prezzo_unitario",
+"importo_netto",
+"vuoto",
+"tipo_IVA",
+"aliquota_IVA",
+"tipo_movimento",
+"tipo_cessione",
+"vuoto2",
+"tipo_accredito",
+"vuoto3"
+]
 
 
 
@@ -10,12 +29,14 @@ class TipoRecord(Field):
   name : str = "tipo_record"
   length : int = 2
   mandatory : bool = True
+  value: int = 0
 
 @dataclass
 class Progressivo(Field):
   name : str = "progressivo"
   length : int = 5
   mandatory : bool = True
+  value: int = 0
 
 @dataclass
 class CodiceArticolo(Field):
@@ -31,13 +52,13 @@ class DescrizioneArticolo(Field):
 
 @dataclass
 class UnitaDiMisura(Field):
-  name : str = "unità_di_misura"
+  name : str = "unita_di_misura"
   length : int = 2
   mandatory : bool = True
 
 @dataclass
 class Quantita(Field):
-  name : str = "quantità"
+  name : str = "quantita"
   length : int = 7
   mandatory : bool = True
 
@@ -135,8 +156,8 @@ class CodiceContabile(Field):
   mandatory : bool = False
 
 @dataclass
-class TipoReso(Field):
-  name : str = "tipo_reso"
+class TipoAccredito(Field):
+  name : str = "tipo_accredito"
   length : int = 1
   mandatory : bool = True
 
@@ -178,45 +199,55 @@ class EAN(Field):
   name : str = "ean"
   length : int = 23
   mandatory : bool = True
-
+  
+@dataclass
+class Vuoto(Field):
+  name : str = "vuoto"
+  length : int
+  mandatory : bool = True
 
 @dataclass
 class Articolo:
-  tipo_record:          Optional[TipoRecord]            = None #01
-  progressivo:          Optional[Progressivo]           = None #02
-  codice_articolo:      Optional[CodiceArticolo]        = None #03
-  descrizione_articolo: Optional[DescrizioneArticolo]   = None #04
-  unita_di_misura:      Optional[UnitaDiMisura]         = None #05
-  quantita:             Optional[Quantita]              = None #06
-  prezzo_unitario:      Optional[PrezzoUnitario]        = None #07
-  importo_netto:        Optional[ImportoNetto]          = None #08
-  numero_pezzi:         Optional[NumeroPezzi]           = None #09
-  tipo_IVA:             Optional[TipoIVA]               = None #10
-  aliquota_IVA:         Optional[AliquotaIVA]           = None #11
-  tipo_movimento:       Optional[TipoMovimento]         = None #12
-  tipo_cessione:        Optional[TipoCessione]          = None #13
-  numero_ordine:        Optional[NumeroOrdine]          = None #14
-  codice_listino:       Optional[CodiceListino]         = None #15
-  tipo_articolo:        Optional[TipoArticolo]          = None #16
-  tipo_contratto:       Optional[TipoContratto]         = None #17
-  tipo_trattamento:     Optional[TipoTrattamento]       = None #18
-  costo_trasporto:      Optional[CostoTrasporto]        = None #19
-  codice_contabile:     Optional[CodiceContabile]       = None #20
-  tipo_reso:            Optional[TipoReso]              = None #21
-  prezzo_catalogo:      Optional[PrezzoCatalogo]        = None #22
-  non_usato:            Optional[NonUsato]              = None #23
-  data_ordine:          Optional[DataOrdine]            = None #24
-  riservato:            Optional[Riservato]             = None #25
-  prezzo_pubblico:      Optional[PrezzoPubblico]        = None #26
-  ean:                  Optional[EAN]                   = None #27
+  tipo_record:          TipoRecord            = field(default_factory =  lambda : TipoRecord(name="tipo_record",length=2,mandatory=True, value=0)) #01
+  progressivo:          Progressivo           = field(default_factory =  lambda : Progressivo(name="progressivo",length=5,mandatory=True)) #02
+  codice_articolo:      CodiceArticolo        = field(default_factory =  lambda : CodiceArticolo(name="codice_articolo",length=15,mandatory=True, value="")) #03
+  descrizione_articolo: DescrizioneArticolo   = field(default_factory =  lambda : DescrizioneArticolo(name="descrizione_articolo",length=30,mandatory=True, value="")) #04
+  unita_di_misura:      UnitaDiMisura         = field(default_factory =  lambda : UnitaDiMisura(name="unita_di_misura",length=2,mandatory=True, value="")) #05
+  quantita:             Quantita              = field(default_factory =  lambda : Quantita(name="quantita",length=7,mandatory=True, value="")) #06
+  prezzo_unitario:      PrezzoUnitario        = field(default_factory =  lambda : PrezzoUnitario(name="prezzo_unitario",length=9,mandatory=True, value="")) #07
+  importo_netto:        ImportoNetto          = field(default_factory =  lambda : ImportoNetto(name="importo_netto",length=9,mandatory=True, value="")) #08
+  vuoto:                Vuoto                 = field(default_factory =  lambda : Vuoto(name="vuoto",length=4,mandatory=True, value="")) #09
+  tipo_IVA:             TipoIVA               = field(default_factory =  lambda : TipoIVA(name="tipo_IVA",length=1,mandatory=True, value="")) #10
+  aliquota_IVA:         AliquotaIVA           = field(default_factory =  lambda : AliquotaIVA(name="aliquota_IVA",length=2,mandatory=True, value="")) #11
+  tipo_movimento:       TipoMovimento         = field(default_factory =  lambda : TipoMovimento(name="tipo_movimento",length=1,mandatory=True, value="")) #12
+  tipo_cessione:        TipoCessione          = field(default_factory =  lambda : TipoCessione(name="tipo_cessione",length=1,mandatory=True, value="")) #13
+  vuoto2:               Vuoto                 = field(default_factory =  lambda : Vuoto(name="vuoto2",length=17,mandatory=True, value="")) #13
+  vuoto3:               Vuoto                 = field(default_factory =  lambda : Vuoto(name="vuoto3",length=22,mandatory=True, value="")) #13
+  numero_ordine:        NumeroOrdine          = field(default_factory =  lambda : NumeroOrdine(name="numero_ordine",length=6,mandatory=False, value="")) #14
+  codice_listino:       CodiceListino         = field(default_factory =  lambda : CodiceListino(name="codice_listino",length=2,mandatory=False, value="")) #15
+  tipo_articolo:        TipoArticolo          = field(default_factory =  lambda : TipoArticolo(name="tipo_articolo",length=1,mandatory=False, value="")) #16
+  tipo_contratto:       TipoContratto         = field(default_factory =  lambda : TipoContratto(name="tipo_contratto",length=1,mandatory=False, value="")) #17
+  tipo_trattamento:     TipoTrattamento       = field(default_factory =  lambda : TipoTrattamento(name="tipo_trattamento",length=1,mandatory=False, value="")) #18
+  costo_trasporto:      CostoTrasporto        = field(default_factory =  lambda : CostoTrasporto(name="costo_trasporto",length=5,mandatory=False, value="")) #19
+  codice_contabile:     CodiceContabile       = field(default_factory =  lambda : CodiceContabile(name="codice_contabile",length=1,mandatory=False, value="")) #20
+  tipo_accredito:       TipoAccredito         = field(default_factory =  lambda : TipoAccredito(name="tipo_accredito",length=1,mandatory=True, value="")) #21
+  prezzo_catalogo:      PrezzoCatalogo        = field(default_factory =  lambda : PrezzoCatalogo(name="prezzo_catalogo",length=7,mandatory=False, value="")) #22
+  non_usato:            NonUsato              = field(default_factory =  lambda : NonUsato(name="non_usato",length=3,mandatory=False, value="")) #23
+  data_ordine:          DataOrdine            = field(default_factory =  lambda : DataOrdine(name="data_ordine",length=6,mandatory=False, value="")) #24
+  riservato:            Riservato             = field(default_factory =  lambda : Riservato(name="riservato",length=6,mandatory=False, value="")) #25
+  prezzo_pubblico:      PrezzoPubblico        = field(default_factory =  lambda : PrezzoPubblico(name="prezzo_pubblico",length=9,mandatory=False, value="")) #26
+  ean:                  EAN                   = field(default_factory =  lambda : EAN(name="ean",length=23,mandatory=False, value="")) #27
   
 
   def __interpolate__(self):
     stringCsv = ""
 
     for key, value in asdict(self).items():
-      if value is not None:
-        stringCsv = stringCsv+getattr(self,key).__value__()
+      if key not in KEYS_TO_INTERPOLATE: continue
+      # print(value)
+      
+      # if getattr(self, key).__mandatory__() is True:
+      stringCsv = stringCsv+getattr(self,key).__value__()
         # print(key, getattr(self,key).__value__())
 
     return stringCsv

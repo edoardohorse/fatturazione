@@ -5,7 +5,7 @@ from articolo import *
 from formato import FormatoColumn, extractFormatiConQuantitaFromRow
 from utils import epurateNaNOfRowByIndex, Field, formatDateToYYYYMMAA
 import pandas as pd
-from const import CODICE_FORNITORE
+from const import CODICE_FORNITORE, P_IVA
 from puntovendita import PuntoVendita
 
 @dataclass
@@ -38,7 +38,15 @@ class RifBolla(Field):
 
 @dataclass
 class Databolla(Field):
-  length : int = 6
+  length : int = 8
+  mandatory: bool = False
+  
+  def __value__(self):
+    return formatDateToYYYYMMAA(self.value)
+
+@dataclass
+class Dataordine(Field):
+  length : int = 8
   mandatory: bool = False
   
   def __value__(self):
@@ -87,12 +95,12 @@ KEYS_TO_INTERPOLATE = [
 'rif_bolla',
 'data_bolla',
 'codice_fornitore',
-'tipocodFornitore',
-'codice_clienteforn',
-'codice_cooperativa',
+'data_ordine',
+'vuoto',
 'codice_socio',
 'tipo_codicesocio',
 'tipo_documento',
+'vuoto2', 
 ]
 
 @dataclass
@@ -106,30 +114,38 @@ class Buono:
   rif_bolla :          Optional[RifBolla] = None          #05
   data_bolla :         Optional[Databolla] = None         #06
   codice_fornitore :   Optional[Codicefornitore] = None   #07
+  data_ordine :         Optional[Dataordine] = None         #06
+  vuoto:                Optional[Vuoto] = None
   tipocodFornitore :   Optional[TipocodFornitore] = None  #08
   codice_clienteforn : Optional[CodiceClienteforn] = None #09
   codice_cooperativa : Optional[CodiceCooperativa] = None #10
   codice_socio :       Optional[Codicesocio] = None       #11
   tipo_codicesocio :   Optional[TipoCodicesocio] = None   #12
   tipo_documento :     Optional[TipoDocumento] = None     #13
+  vuoto2:                Optional[Vuoto] = None
   
   def __init__(self, df: pd.DataFrame, index: int, numFattura: str, dataFattura: datetime, puntiVendita: dict[str, PuntoVendita]):
     self.articoli = []
     self.index = index
     
+    # print(df.iloc[index])
     dataBolla = df.iloc[index]["data"]
     codiceSocio = puntiVendita[df.iloc[index]["nome"]]
-
-    self.tipo_record = TipoRecord(value=2)
-    self.progressivo = Progressivo(value=self.index)
+    numeroBolla = int(df.iloc[index]["n. buono"])
+    
+    self.tipo_record = TipoRecord(value=1)
+    self.progressivo = Progressivo(value=numeroBolla)
     self.rifFattura = NumeroFattura(value=numFattura)
     self.data_fattura = Datafattura(value=dataFattura)
-    self.rif_bolla =  RifBolla(value=self.index)
+    self.rif_bolla =  RifBolla(value=numeroBolla)
     self.data_bolla = Databolla(value=dataBolla)
-    self.codice_fornitore = Codicefornitore(value=CODICE_FORNITORE)
+    self.codice_fornitore = Codicefornitore(value=P_IVA)
+    self.vuoto = Vuoto(value="", length=23)
+    self.data_ordine = Dataordine(value=dataBolla)
     self.codice_socio = Codicesocio(value=codiceSocio.codice)
     self.tipo_codicesocio = TipoCodicesocio(value="1")
     self.tipo_documento = TipoDocumento(value="F")
+    self.vuoto2 = Vuoto(value="", length=30)
     
   
   def getArticoli(self, df: pd.DataFrame) -> List[Articolo]:
@@ -138,7 +154,7 @@ class Buono:
     formatiFromRow = extractFormatiConQuantitaFromRow(rowCleaned)
 
     articoli = []
-    indexArticolo = 1
+    # indexArticolo = 1
     
     for codiceFormato in formatiFromRow:
       formatoColumn: FormatoColumn = formatiFromRow[codiceFormato]
@@ -148,24 +164,28 @@ class Buono:
       # print(formatoColumn.formato.articolo)
       articolo = Articolo(
         tipo_record           = TipoRecord          (value=2),
-        progressivo           = Progressivo         (value=indexArticolo), # TODO
+        progressivo           = Progressivo         (value=self.progressivo.__value__()),
         codice_articolo       = CodiceArticolo      (value=formatoColumn.formato.codice),
         descrizione_articolo  = DescrizioneArticolo (value=formatoColumn.formato.articolo),
         unita_di_misura       = UnitaDiMisura       (value="PZ"),
         quantita              = Quantita            (value=formatoColumn.quantita),
         prezzo_unitario       = PrezzoUnitario      (value=formatoColumn.formato.prezzo),
         importo_netto         = ImportoNetto        (value=importoNetto),
+        vuoto                 = Vuoto               (value="", length=4),
         tipo_IVA              = TipoIVA             (value=" "),
         aliquota_IVA          = AliquotaIVA         (value=formatoColumn.formato.iva),
         tipo_movimento        = TipoMovimento       (value=" "),
         tipo_cessione         = TipoCessione        (value="1"),
-        tipo_reso             = TipoReso            (value=""),
+        vuoto2                = Vuoto               (value="",length=17),
+        vuoto3                = Vuoto               (value="",length=22),
+        tipo_accredito        = TipoAccredito            (value=""),
         data_ordine           = DataOrdine          (value=rowCleaned["data"]),
         ean                   = EAN                 (value=formatoColumn.formato.ean)
       )
+      
 
       articoli.append(articolo)
-      indexArticolo = indexArticolo + 1
+      # indexArticolo = indexArticolo + 1
       
       self.articoli = articoli
        

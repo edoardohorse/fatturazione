@@ -26,9 +26,18 @@ MESI = [
 class Field:
   value: any
   length: int
+  mandatory: bool = False
+  
+  def __length__(self):
+    return self.length
+  
+  def __mandatory__(self):
+    return self.mandatory
   
   def __value__(self):
-    return str(self.value).strip().rjust(self.length, "0")
+    if isinstance(self.value, int):
+      return str(self.value).rjust(self.length, "0")
+    return str(self.value).strip().rjust(self.length, " ")
 
 # get a row from df by its index and return only column that are populated
 def epurateNaNOfRowByIndex(df: pd.DataFrame,index: int):
@@ -58,7 +67,7 @@ def splitDecimalWithPadding(value: str, nPaddingInt: int, nPaddingDecimal : int)
   if len(split) == 2 :
     decimal = split[1]
     
-  decimal = decimal.rjust(nPaddingDecimal, "0")
+  decimal = decimal.ljust(nPaddingDecimal, "0")
 
   return intero+decimal
 
